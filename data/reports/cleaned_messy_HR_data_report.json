@@ -1,0 +1,205 @@
+{
+  "summary": {
+    "rows_before": 1000,
+    "rows_after": 1000,
+    "columns_before": 10,
+    "columns_after": 10,
+    "duplicate_rows_before": 0,
+    "actions_count": 0
+  },
+  "profile_before": {
+    "rows": 1000,
+    "columns": 10,
+    "duplicate_rows": 0,
+    "column_profiles": [
+      {
+        "column": "Name",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 10,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Age",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 6,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Salary",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 6,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Gender",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 3,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Department",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 5,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Position",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 5,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Joining Date",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 5,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Performance Score",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 5,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Email",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 190,
+        "missing_pct": 19.0,
+        "cardinality": 4,
+        "non_null_count": 810
+      },
+      {
+        "column": "Phone Number",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 191,
+        "missing_pct": 19.1,
+        "cardinality": 4,
+        "non_null_count": 809
+      }
+    ]
+  },
+  "profile_after": {
+    "rows": 1000,
+    "columns": 10,
+    "duplicate_rows": 0,
+    "column_profiles": [
+      {
+        "column": "Name",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 10,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Age",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 6,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Salary",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 6,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Gender",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 3,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Department",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 5,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Position",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 5,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Joining Date",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 5,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Performance Score",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 5,
+        "non_null_count": 1000
+      },
+      {
+        "column": "Email",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 190,
+        "missing_pct": 19.0,
+        "cardinality": 4,
+        "non_null_count": 810
+      },
+      {
+        "column": "Phone Number",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 191,
+        "missing_pct": 19.1,
+        "cardinality": 4,
+        "non_null_count": 809
+      }
+    ]
+  },
+  "actions": []
+}

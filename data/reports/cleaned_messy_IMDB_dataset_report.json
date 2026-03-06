@@ -1,0 +1,259 @@
+{
+  "summary": {
+    "rows_before": 100,
+    "rows_after": 100,
+    "columns_before": 11,
+    "columns_after": 11,
+    "duplicate_rows_before": 0,
+    "actions_count": 0
+  },
+  "profile_before": {
+    "rows": 100,
+    "columns": 11,
+    "duplicate_rows": 0,
+    "column_profiles": [
+      {
+        "column": "Imbd Title Id",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 100,
+        "non_null_count": 100
+      },
+      {
+        "column": "Original Title",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 100,
+        "non_null_count": 100
+      },
+      {
+        "column": "Release Year",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 99,
+        "non_null_count": 100
+      },
+      {
+        "column": "Genre",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 59,
+        "non_null_count": 100
+      },
+      {
+        "column": "Duration",
+        "dtype": "Int64",
+        "inferred_type": "numeric",
+        "missing_count": 6,
+        "missing_pct": 6.0,
+        "cardinality": 65,
+        "non_null_count": 94,
+        "outliers_iqr": {
+          "lower_bound": 58.0,
+          "upper_bound": 208.0,
+          "count_below": 0,
+          "count_above": 3
+        }
+      },
+      {
+        "column": "Country",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 13,
+        "non_null_count": 100
+      },
+      {
+        "column": "Content Rating",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 8,
+        "non_null_count": 100
+      },
+      {
+        "column": "Director",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 64,
+        "non_null_count": 100
+      },
+      {
+        "column": "Income",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 100,
+        "non_null_count": 100
+      },
+      {
+        "column": "Votes",
+        "dtype": "Int64",
+        "inferred_type": "numeric",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 100,
+        "non_null_count": 100,
+        "outliers_iqr": {
+          "lower_bound": -680692.375,
+          "upper_bound": 2172004.625,
+          "count_below": 0,
+          "count_above": 2
+        }
+      },
+      {
+        "column": "Score",
+        "dtype": "float64",
+        "inferred_type": "numeric",
+        "missing_count": 2,
+        "missing_pct": 2.0,
+        "cardinality": 19,
+        "non_null_count": 98,
+        "outliers_iqr": {
+          "lower_bound": 6.850000000000001,
+          "upper_bound": 9.649999999999999,
+          "count_below": 0,
+          "count_above": 0
+        }
+      }
+    ]
+  },
+  "profile_after": {
+    "rows": 100,
+    "columns": 11,
+    "duplicate_rows": 0,
+    "column_profiles": [
+      {
+        "column": "Imbd Title Id",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 100,
+        "non_null_count": 100
+      },
+      {
+        "column": "Original Title",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 100,
+        "non_null_count": 100
+      },
+      {
+        "column": "Release Year",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 99,
+        "non_null_count": 100
+      },
+      {
+        "column": "Genre",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 59,
+        "non_null_count": 100
+      },
+      {
+        "column": "Duration",
+        "dtype": "Int64",
+        "inferred_type": "numeric",
+        "missing_count": 6,
+        "missing_pct": 6.0,
+        "cardinality": 65,
+        "non_null_count": 94,
+        "outliers_iqr": {
+          "lower_bound": 58.0,
+          "upper_bound": 208.0,
+          "count_below": 0,
+          "count_above": 3
+        }
+      },
+      {
+        "column": "Country",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 13,
+        "non_null_count": 100
+      },
+      {
+        "column": "Content Rating",
+        "dtype": "object",
+        "inferred_type": "categorical",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 8,
+        "non_null_count": 100
+      },
+      {
+        "column": "Director",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 64,
+        "non_null_count": 100
+      },
+      {
+        "column": "Income",
+        "dtype": "object",
+        "inferred_type": "text",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 100,
+        "non_null_count": 100
+      },
+      {
+        "column": "Votes",
+        "dtype": "Int64",
+        "inferred_type": "numeric",
+        "missing_count": 0,
+        "missing_pct": 0.0,
+        "cardinality": 100,
+        "non_null_count": 100,
+        "outliers_iqr": {
+          "lower_bound": -680692.375,
+          "upper_bound": 2172004.625,
+          "count_below": 0,
+          "count_above": 2
+        }
+      },
+      {
+        "column": "Score",
+        "dtype": "float64",
+        "inferred_type": "numeric",
+        "missing_count": 2,
+        "missing_pct": 2.0,
+        "cardinality": 19,
+        "non_null_count": 98,
+        "outliers_iqr": {
+          "lower_bound": 6.850000000000001,
+          "upper_bound": 9.649999999999999,
+          "count_below": 0,
+          "count_above": 0
+        }
+      }
+    ]
+  },
+  "actions": []
+}
