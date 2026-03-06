@@ -108,7 +108,7 @@ def write_report_html(report: dict[str, Any], path: str | Path) -> None:
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>CleanPilot – Cleaning Report</title>
+  <title>Cleanse – Cleaning Report</title>
   <style>
     body {{ font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }}
     h1 {{ font-size: 1.5rem; }}
@@ -121,7 +121,7 @@ def write_report_html(report: dict[str, Any], path: str | Path) -> None:
   </style>
 </head>
 <body>
-  <h1>CleanPilot – Cleaning Report</h1>
+  <h1>Cleanse – Cleaning Report</h1>
   <h2>Summary</h2>
   <div class="summary">
     <span><strong>Rows:</strong> {rows_before} → {rows_after}</span>

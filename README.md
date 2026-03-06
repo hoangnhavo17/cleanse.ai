@@ -1,4 +1,4 @@
-# CleanPilot
+# Cleanse
 
 One pipeline: load CSV → rule-based clean → profile + automated rules → save cleaned CSV + report.
 
@@ -58,7 +58,7 @@ Report paths default to `data/reports/` (e.g. `data/reports/out_report.json`); o
 ## Project structure
 
 ```
-CleanPilot/
+Cleanse/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py          # entrypoint: run pipeline

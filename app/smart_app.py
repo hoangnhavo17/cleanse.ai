@@ -73,7 +73,7 @@ def _run_pipeline_on_dataframe(
     apply_standard_clean: bool,
     apply_automated_rules_flag: bool,
 ) -> Dict[str, Any]:
-    """Run CleanPilot pipeline with configurable preprocessing steps."""
+    """Run Cleanse pipeline with configurable preprocessing steps."""
     df_work = df_raw.copy()
     rows_before, cols_before = df_work.shape
 
@@ -129,7 +129,7 @@ def _extract_human_in_loop_suggestions(issues: List[Issue]) -> List[Tuple[Issue,
 
 def main() -> None:
     st.set_page_config(
-        page_title="CleanPilot – Smart Data Cleaning",
+        page_title="Cleanse – Smart Data Cleaning",
         layout="wide",
         page_icon="✨",
     )
@@ -263,7 +263,7 @@ def main() -> None:
         st.markdown(
             """
             <div class="cp-hero">
-              <div class="cp-eyebrow">CleanPilot</div>
+              <div class="cp-eyebrow">Cleanse</div>
               <h1 class="cp-title">From messy CSVs to trustworthy datasets.</h1>
               <p class="cp-subtitle">
                 Use the sidebar to pick a dataset, preview its structure, run generic preprocessing steps,
