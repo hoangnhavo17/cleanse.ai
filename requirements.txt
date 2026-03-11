@@ -1,6 +1,10 @@
-# Core (numpy<2 avoids incompatibility with pyarrow/numexpr/bottleneck in many environments)
+# Core (numpy<2 avoids incompatibility with many compiled deps)
 numpy>=1.20.0,<2
 pandas>=2.0.0,<3.0.0
+pyarrow>=10.0.0,<16.0.0
+
+# HTTP client (used by Gemini API calls)
+requests>=2.28.0,<3.0.0
 
 # Web UI for Stage 3 review
 streamlit>=1.40.0,<2.0.0

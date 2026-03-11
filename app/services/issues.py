@@ -24,6 +24,7 @@ class IssueCategory(str, Enum):
     CONSTANT = "constant"
     DUPLICATES = "duplicates"
     DISTRIBUTION = "distribution"
+    TEXT_QUALITY = "text_quality"
     OTHER = "other"
 
 
@@ -124,11 +125,7 @@ def detect_issues_from_profile(profile: Dict[str, Any]) -> List[Issue]:
     col_profiles = profile.get("column_profiles", []) or []
     n_rows = max(1, int(profile.get("rows", 0)) or 1)
 
-    def _next_id(prefix: str, idx: int) -> str:
-        return f"{prefix}_{idx}"
-
-    # Column-level issues
-    for idx, cp in enumerate(col_profiles):
+    for cp in col_profiles:
         col = str(cp.get("column"))
         inferred = cp.get("inferred_type")
         missing_pct = float(cp.get("missing_pct", 0.0) or 0.0)
@@ -141,9 +138,6 @@ def detect_issues_from_profile(profile: Dict[str, Any]) -> List[Issue]:
         if missing_pct >= 30.0:
             sev = IssueSeverity.ERROR if missing_pct >= 60.0 else IssueSeverity.WARNING
 
-            # Only suggest dropping the column when missingness is extremely high.
-            # Below this threshold we surface the issue but do not propose a
-            # destructive action like dropping the column.
             suggestions: List[SuggestedAction] = []
             if missing_pct >= 85.0:
                 suggestions.append(
@@ -157,7 +151,7 @@ def detect_issues_from_profile(profile: Dict[str, Any]) -> List[Issue]:
 
             issues.append(
                 Issue(
-                    id=_next_id("missing", idx),
+                    id=f"missing::{col}",
                     category=IssueCategory.MISSINGNESS,
                     severity=sev,
                     title=f"High missingness in '{col}'",
@@ -172,11 +166,11 @@ def detect_issues_from_profile(profile: Dict[str, Any]) -> List[Issue]:
                 )
             )
 
-        # Constant columns (non-null but only one unique value)
+        # Constant columns
         if non_null_count > 0 and cardinality == 1:
             issues.append(
                 Issue(
-                    id=_next_id("constant", idx),
+                    id=f"constant::{col}",
                     category=IssueCategory.CONSTANT,
                     severity=IssueSeverity.INFO,
                     title=f"Constant column '{col}'",
@@ -197,13 +191,13 @@ def detect_issues_from_profile(profile: Dict[str, Any]) -> List[Issue]:
                 )
             )
 
-        # High-cardinality categoricals: many unique values compared to rows
+        # High-cardinality categoricals
         if inferred == INFERRED_CATEGORICAL and non_null_count > 0:
             ratio = cardinality / max(1, non_null_count)
             if cardinality > 100 and ratio > 0.5:
                 issues.append(
                     Issue(
-                        id=_next_id("cardinality", idx),
+                        id=f"cardinality::{col}",
                         category=IssueCategory.CARDINALITY,
                         severity=IssueSeverity.INFO,
                         title=f"High-cardinality categorical '{col}'",
@@ -221,15 +215,13 @@ def detect_issues_from_profile(profile: Dict[str, Any]) -> List[Issue]:
                 )
 
         # Mixed types: inferred numeric/datetime but dtype suggests otherwise.
-        # Use a case-insensitive check so nullable dtypes like 'Int64'/'Float64'
-        # are treated as numeric, not mixed.
         dtype_lower = dtype.lower()
         if inferred in (INFERRED_NUMERIC, INFERRED_DATETIME) and not dtype_lower.startswith(
             ("int", "float", "uint", "datetime64")
         ):
             issues.append(
                 Issue(
-                    id=_next_id("mixed", idx),
+                    id=f"mixed::{col}",
                     category=IssueCategory.MIXED_TYPES,
                     severity=IssueSeverity.WARNING,
                     title=f"Mixed types in '{col}'",
@@ -259,7 +251,7 @@ def detect_issues_from_profile(profile: Dict[str, Any]) -> List[Issue]:
         ):
             issues.append(
                 Issue(
-                    id=_next_id("outliers", idx),
+                    id=f"outliers::{col}",
                     category=IssueCategory.OUTLIERS,
                     severity=IssueSeverity.INFO,
                     title=f"Numeric outliers in '{col}'",
@@ -273,12 +265,37 @@ def detect_issues_from_profile(profile: Dict[str, Any]) -> List[Issue]:
                 )
             )
 
+        # Text quality: for text / categorical columns, create a low-severity issue so the AI
+        # layer can reason about spelling, casing, and stray characters (e.g. values like 'Italy1').
+        # This is intentionally generic; the recommender sees sample_values and top_value_counts
+        # and can propose normalize_values or title_case where appropriate.
+        if inferred in (INFERRED_TEXT, INFERRED_CATEGORICAL) and non_null_count >= 10:
+            issues.append(
+                Issue(
+                    id=f"text_quality::{col}",
+                    category=IssueCategory.TEXT_QUALITY,
+                    severity=IssueSeverity.INFO,
+                    title=f"Text quality in '{col}'",
+                    message=(
+                        f"Column '{col}' contains textual or categorical values. "
+                        "Review spelling, casing, and stray characters."
+                    ),
+                    column=col,
+                    stats={
+                        "inferred_type": inferred,
+                        "non_null_count": non_null_count,
+                        "cardinality": cardinality,
+                    },
+                    suggestions=[],
+                )
+            )
+
     # Dataset-level duplicates
     dup_rows = int(profile.get("duplicate_rows", 0) or 0)
     if dup_rows > 0:
         issues.append(
             Issue(
-                id="duplicates_dataset",
+                id="duplicates::dataset",
                 category=IssueCategory.DUPLICATES,
                 severity=IssueSeverity.WARNING,
                 title="Duplicate rows detected",

@@ -51,6 +51,64 @@ def build_report(
     }
 
 
+def _generate_ai_commentary(report: dict[str, Any]) -> str | None:
+    """
+    Use Gemini API to generate a human-friendly summary of the cleaning run.
+
+    Best-effort: returns None if the API key is missing or the call fails,
+    so the rest of the report still renders normally.
+    """
+    import requests
+
+    try:
+        import streamlit as st
+        api_key = st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        return None
+    if not api_key or not api_key.strip():
+        return None
+
+    summary = report.get("summary", {})
+    quality = report.get("quality", {}) or {}
+    issues = report.get("issues", []) or []
+    actions = report.get("actions", []) or []
+
+    issues_serialized = issues[:20]
+    actions_serialized = actions[:40]
+
+    prompt = (
+        "You are a data cleaning and data quality expert. "
+        "A business stakeholder needs to understand the result of a data "
+        "cleaning run. Based on the structured details below, write 2-4 short "
+        "paragraphs explaining:\n"
+        "- what was cleaned and why it mattered\n"
+        "- the main issues that were found\n"
+        "- what was fixed automatically vs. what may still need human attention.\n\n"
+        "Avoid code snippets; use clear, plain language.\n\n"
+        f"Summary:\n{json.dumps(summary, indent=2)}\n\n"
+        f"Quality:\n{json.dumps(quality, indent=2)}\n\n"
+        f"Issues (truncated):\n{json.dumps(issues_serialized, indent=2)}\n\n"
+        f"Actions (truncated):\n{json.dumps(actions_serialized, indent=2)}"
+    )
+
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/"
+        f"models/gemini-2.5-flash:generateContent?key={api_key.strip()}"
+    )
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.3, "maxOutputTokens": 1024},
+    }
+    try:
+        resp = requests.post(url, json=payload, timeout=60)
+        if resp.status_code != 200:
+            return None
+        body = resp.json()
+        return body["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception:
+        return None
+
+
 def write_report_json(report: dict[str, Any], path: str | Path) -> None:
     """Write report as JSON file."""
     path = Path(path)
@@ -69,6 +127,11 @@ def write_report_html(report: dict[str, Any], path: str | Path) -> None:
     profile_after = report.get("profile_after") or {}
     issues = report.get("issues", []) or []
     quality = report.get("quality", {}) or {}
+
+    ai_commentary = _generate_ai_commentary(report)
+    ai_commentary_html = (
+        "<br>".join(ai_commentary.splitlines()) if ai_commentary else ""
+    )
 
     rows_before = summary.get("rows_before", 0)
     rows_after = summary.get("rows_after", 0)
@@ -134,7 +197,12 @@ def write_report_html(report: dict[str, Any], path: str | Path) -> None:
     <span><strong>Data quality score:</strong> {quality_score} / 100</span>"""
     html += """
   </div>
-  <h2>Actions applied</h2>
+  <h2>Actions applied</h2>"""
+    if ai_commentary_html:
+        html += f"""
+  <h2>AI summary of this cleaning run</h2>
+  <p>{ai_commentary_html}</p>"""
+    html += """
   <table>
     <thead><tr><th>Action</th><th>Column</th><th>Value / Count</th></tr></thead>
     <tbody>{actions_rows}</tbody>

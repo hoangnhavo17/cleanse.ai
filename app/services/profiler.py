@@ -32,14 +32,12 @@ def _infer_column_type(series: pd.Series) -> str:
     coerced = pd.to_numeric(non_null.astype(str).str.replace(",", "").str.replace(" ", ""), errors="coerce")
     if coerced.notna().mean() >= 0.9:
         return INFERRED_NUMERIC
-    # Try datetime (suppress pandas date parsing warnings; use dayfirst for DD/MM/YYYY)
+    # Try datetime (element-by-element so mixed formats are handled)
     try:
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", message=".*Could not infer format.*", category=UserWarning)
-            warnings.filterwarnings("ignore", message=".*Parsing dates.*dayfirst.*", category=UserWarning)
-            pd.to_datetime(non_null.head(100), errors="coerce", dayfirst=True)
-            if pd.to_datetime(non_null, errors="coerce", dayfirst=True).notna().mean() >= 0.8:
-                return INFERRED_DATETIME
+        from app.services.cleaner import _coerce_series_to_datetime
+        dt = _coerce_series_to_datetime(non_null.astype(str))
+        if dt.notna().mean() >= 0.8:
+            return INFERRED_DATETIME
     except Exception:
         pass
     # Low cardinality -> categorical

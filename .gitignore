@@ -35,6 +35,9 @@ env/
 # Env (optional: keep .env.example, ignore .env if it has secrets)
 .env
 
+# Streamlit secrets (contains API keys)
+.streamlit/secrets.toml
+
 # Output
 cleaned.csv
 

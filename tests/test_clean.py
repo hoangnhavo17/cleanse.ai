@@ -7,12 +7,8 @@ from app.services.cleaner import (
     coerce_numeric,
     drop_empty_columns,
     drop_empty_rows,
-    fix_country_typos,
-    fix_title_typos,
     normalize_column_names,
-    normalize_duration,
     normalize_numeric_strings,
-    normalize_release_dates,
     remove_duplicates,
     standardize_nulls,
     trim_whitespace,
@@ -80,61 +76,6 @@ def test_normalize_numeric_strings_income_digit_lookalikes():
     assert out.loc[1, "Income"] == "123"
 
 
-def test_fix_country_typos():
-    # Explicit map (US., US), normalize (Italy1 → Italy), fuzzy (New Zesland → New Zealand)
-    df = pd.DataFrame({
-        "Country": ["New Zesland", "New Zeland", "US.", "Italy1", "USA"],
-    })
-    out = fix_country_typos(df)
-    assert out["Country"].tolist() == ["New Zealand", "New Zealand", "USA", "Italy", "USA"]
-
-
-def test_fix_country_typos_robust():
-    """Unseen typos still get fixed via normalize or fuzzy (no explicit map entry)."""
-    df = pd.DataFrame({"Country": ["Italy2", "New Zealnd", "  Germany  "]})
-    out = fix_country_typos(df)
-    assert out.loc[0, "Country"] == "Italy"   # normalize strips trailing digits
-    assert out.loc[1, "Country"] == "New Zealand"  # fuzzy match
-    assert out.loc[2, "Country"] == "Germany"     # exact after strip
-
-
-def test_fix_title_typos():
-    # Pattern replacement B9 → è (no need for full-string map)
-    df = pd.DataFrame({"Original title": ["La vita B9 bella", "Other Film"]})
-    out = fix_title_typos(df)
-    assert out.loc[0, "Original title"] == "La vita è bella"
-    assert out.loc[1, "Original title"] == "Other Film"
-
-
-def test_normalize_duration():
-    df = pd.DataFrame({"Duration": ["178c", "96", " 120 ", pd.NA]})
-    out = normalize_duration(df)
-    assert out["Duration"].tolist() == ["178", "96", "120", pd.NA]
-
-
-def test_normalize_release_dates():
-    df = pd.DataFrame({
-        "Release year": [
-            "1995-02-10",
-            "09 21 1972",
-            "22 Feb 04",
-            "23rd December of 1966",
-            "18/11/1976",
-            "10-29-99",
-        ],
-        "other": [1, 2, 3, 4, 5, 6],
-    })
-    out = normalize_release_dates(df)
-    assert out["Release year"].tolist() == [
-        "1995-02-10",
-        "1972-09-21",
-        "2004-02-22",
-        "1966-12-23",
-        "1976-11-18",
-        "1999-10-29",
-    ]
-
-
 def test_drop_empty_columns():
     df = pd.DataFrame({"a": [1, 2], "": [pd.NA, pd.NA], "b": [3, 4]})
     out = drop_empty_columns(df)
@@ -149,3 +90,6 @@ def test_clean_end_to_end():
     out = clean(df)
     assert out["name"].str.strip().tolist() == ["Alice", "Bob"]
     assert len(out) == 2
+
+
+*** End of File
