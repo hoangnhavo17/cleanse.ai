@@ -27,10 +27,10 @@ MAX_ISSUES_PER_REQUEST = 8
 # --- Helpers -----------------------------------------------------------------
 
 DEMO_DATASETS: Dict[str, Path] = {
-    "Warehouse Inventory": Path("data/raw/warehouse_messy_data.csv"),
-    "Healthcare Records": Path("data/raw/healthcare_messy_data.csv"),
-    "HR Data": Path("data/raw/messy_HR_data.csv"),
-    "Movie Ratings": Path("data/raw/messy_IMDB_dataset.csv"),
+    "Warehouse Inventory": Path("data/warehouse_messy_data.csv"),
+    "Healthcare Records": Path("data/healthcare_messy_data.csv"),
+    "HR Data": Path("data/messy_HR_data.csv"),
+    "Movie Ratings": Path("data/messy_IMDB_dataset.csv"),
 }
 
 
@@ -644,7 +644,7 @@ def main() -> None:
     else:
         demos = _available_demo_datasets()
         if not demos:
-            st.sidebar.warning("No Demo Datasets found in `data/raw/`.")
+            st.sidebar.warning("No Demo Datasets found in `data/`.")
         else:
             old_label = st.session_state.get("cp_demo")
             if isinstance(old_label, str) and old_label not in demos:
@@ -709,11 +709,10 @@ def main() -> None:
     st.markdown(
         """
         <div class="cp-hero">
-          <div class="cp-eyebrow">Cleanse</div>
-          <h1 class="cp-title">From messy CSVs to trustworthy datasets.</h1>
+          <h1 class="cp-title">Cleanse.ai</h1>
           <p class="cp-subtitle">
-            Pick a dataset, preview it, run preprocessing, review AI suggestions,
-            then download the cleaned result.
+            From messy CSVs to trustworthy datasets. Pick a dataset, preview it,
+            run preprocessing, review AI suggestions, then download the cleaned result.
           </p>
         </div>
         """,

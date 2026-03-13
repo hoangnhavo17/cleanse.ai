@@ -8,12 +8,11 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Centralized data directories
 DATA_DIR: Path = _PROJECT_ROOT / "data"
-RAW_DATA_DIR: Path = DATA_DIR / "raw"
 CLEANED_DATA_DIR: Path = DATA_DIR / "cleaned"
 REPORTS_DIR: Path = DATA_DIR / "reports"
 
-# Default input/output within data/ (can be overridden)
-INPUT_PATH: Path = RAW_DATA_DIR / "messy.csv"
+# Default input/output (can be overridden)
+INPUT_PATH: Path = DATA_DIR / "messy.csv"
 OUTPUT_PATH: Path = CLEANED_DATA_DIR / "cleaned.csv"
 
 # Report outputs (in data/reports by default)

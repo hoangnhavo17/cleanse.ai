@@ -6,7 +6,7 @@ One pipeline: load CSV → **standard cleaning** → profile + automated rules �
 
 ## What it does
 
-- **Input:** `data/raw/messy.csv` (or any CSV path)
+- **Input:** `data/messy.csv` (or any CSV path)
 - **Output:** `data/cleaned/cleaned.csv` + reports in `data/reports/` (use `--no-report` to skip reports)
 
 **Pipeline:** load CSV → **standard cleaning** (trim, nulls, renames, numeric, coerce, dedupe) → **profile** → **apply automated rules** (type fixes, dedupe) → save CSV + report.
@@ -40,8 +40,8 @@ python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-# Place your input file as data/raw/messy.csv (or set paths in app/config.py / .env)
-# Run the pipeline (reads data/raw/messy.csv, writes data/cleaned/cleaned.csv)
+# Place your input file as data/messy.csv (or set paths in app/config.py / .env)
+# Run the pipeline (reads data/messy.csv, writes data/cleaned/cleaned.csv)
 python -m app.main
 ```
 
@@ -52,7 +52,7 @@ Override paths programmatically by calling `run(input_path="...", output_path=".
 To skip writing report files:
 
 ```bash
-python -m app.main data/raw/messy.csv -o data/cleaned/out.csv --no-report
+python -m app.main data/messy.csv -o data/cleaned/out.csv --no-report
 ```
 
 Report paths default to `data/reports/` (e.g. `data/reports/out_report.json`); or set `REPORT_JSON_PATH` / `REPORT_HTML_PATH` in `app/config.py`.
@@ -75,10 +75,7 @@ Cleanse/
 │   ├── models/
 │   ├── routes/
 │   └── utils/
-├── data/
-│   ├── raw/              # input CSVs (e.g. messy_*.csv)
-│   ├── cleaned/          # cleaned outputs (e.g. cleaned_*.csv)
-│   └── reports/          # JSON/HTML reports
+├── data/                  # demo CSVs (warehouse, healthcare, HR, IMDB); cleaned/ & reports/ gitignored
 ├── tests/
 │   ├── test_clean.py    # unit tests for cleaning steps
 │   └── test_pipeline.py # integration: messy.csv → cleaned.csv
@@ -103,10 +100,10 @@ From the project root:
 
 ```bash
 # Run the pipeline – reports include issues + quality score
-python -m app.main data/raw/messy.csv -o data/cleaned/cleaned.csv
+python -m app.main data/messy.csv -o data/cleaned/cleaned.csv
 
 # Richer report metadata for use with the web app
-python -m app.main --review data/raw/messy.csv -o data/cleaned/cleaned.csv
+python -m app.main --review data/messy.csv -o data/cleaned/cleaned.csv
 ```
 
 This produces:
@@ -142,7 +139,7 @@ The app is set up to run on [Streamlit Community Cloud](https://streamlit.io/clo
    ```toml
    GEMINI_API_KEY = "your-api-key"
    ```
-6. Deploy. Demo datasets (e.g. Warehouse, Healthcare, HR, IMDB) are in `data/raw/` in the repo, so they appear in the app; users can also upload their own CSV.
+6. Deploy. Demo datasets (e.g. Warehouse, Healthcare, HR, IMDB) are in `data/` in the repo, so they appear in the app; users can also upload their own CSV.
 
 ## Tests
 

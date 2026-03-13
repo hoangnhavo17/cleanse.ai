@@ -3,9 +3,9 @@ Entrypoint: one pipeline — load → standard cleaning → profile + automated 
 
 Usage:
   python -m app.main                                      # use config defaults (INPUT_PATH, OUTPUT_PATH in data/)
-  python -m app.main data/raw/messy_IMDB_dataset.csv      # input CSV, output: cleaned_<name>.csv + report
-  python -m app.main data/raw/messy.csv -o data/cleaned/out.csv   # custom output (report in data/reports/)
-  python -m app.main data/raw/messy.csv --no-report       # skip writing report files
+  python -m app.main data/messy_IMDB_dataset.csv      # input CSV, output: cleaned_<name>.csv + report
+  python -m app.main data/messy.csv -o data/cleaned/out.csv   # custom output (report in data/reports/)
+  python -m app.main data/messy.csv --no-report       # skip writing report files
 """
 from pathlib import Path
 
