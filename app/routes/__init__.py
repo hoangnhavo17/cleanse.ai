@@ -1,1 +1,1 @@
-# Routes (empty for Stage 1 — no API)
+# Routes (reserved for future use — no API)

@@ -1,15 +1,15 @@
-# Cleanse
+# Cleanse.ai
 
-One pipeline: load CSV → rule-based clean → profile + automated rules → save cleaned CSV + report.
+One pipeline: load CSV → **standard cleaning** → profile + automated rules → save cleaned CSV + report.
 
 ## What it does
 
 - **Input:** `data/raw/messy.csv` (or any CSV path)
 - **Output:** `data/cleaned/cleaned.csv` + reports in `data/reports/` (use `--no-report` to skip reports)
 
-**Pipeline:** load CSV → **clean** (trim, nulls, renames, numeric, coerce, dedupe) → **profile** → **apply automated rules** (type fixes, dedupe) → save CSV + report.
+**Pipeline:** load CSV → **standard cleaning** (trim, nulls, renames, numeric, coerce, dedupe) → **profile** → **apply automated rules** (type fixes, dedupe) → save CSV + report.
 
-### Features (rule-based clean + automated rules)
+### Features (standard cleaning + automated rules)
 
 1. **Delimiter** — configurable `CSV_SEP` (e.g. `;` for European/IMDb-style files).
 2. **Bad variable names** — strip whitespace, rename via `COLUMN_RENAMES`, fix common corruptions (e.g. "Original titl" → "Original title", "Genr" → "Genre").
@@ -61,11 +61,12 @@ Report paths default to `data/reports/` (e.g. `data/reports/out_report.json`); o
 Cleanse/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py          # entrypoint: run pipeline
+│   ├── main.py          # CLI entrypoint: run pipeline
+│   ├── smart_app.py     # Streamlit web app: preview, standard cleaning, AI recommendations, download
 │   ├── config.py        # paths, encoding, CSV_SEP, COLUMN_RENAMES, null sentinels
 │   ├── services/
 │   │   ├── csv_io.py           # load_csv (sep), save_csv
-│   │   ├── cleaner.py           # rule-based: trim, nulls, renames, numeric, coerce, dedupe
+│   │   ├── cleaner.py           # standard cleaning: trim, nulls, renames, numeric, coerce, dedupe
 │   │   ├── profiler.py          # profile_dataset (missing %, types, cardinality, outliers)
 │   │   ├── automated_cleaner.py # profile-based: type fixes, dedupe
 │   │   └── report_generator.py  # build_report, write_report_json/html
@@ -84,24 +85,25 @@ Cleanse/
 └── README.md
 ```
 
-## Stage 3 – Smart Cleaning Assistant (human-in-the-loop)
+## Cleanse.ai – Smart Cleaning Assistant (web app)
 
-Stage 3 adds a review layer on top of the automated cleaning:
+The **Streamlit web app** gives a human-in-the-loop workflow on top of the pipeline:
 
-- **Safe auto-clean** still runs end-to-end (trim, nulls, renames, numeric normalization, duplicates, type coercion).
-- The system then **profiles** the dataset and detects potential issues (missingness, outliers, mixed types, high cardinality, constant columns, duplicates).
-- Issues and a **data quality score** (0–100 with component breakdown) are written into the JSON report.
-- A small **web review app** lets you inspect issues and selectively apply additional fixes.
+1. **Preview, Schema & Report** — Load a CSV (or pick a demo dataset), inspect rows/schema and raw data quality.
+2. **Core Preprocessing** — Run **standard cleaning** (always on): trim whitespace, standardize nulls, clean column names, drop empty rows/columns, remove exact duplicates. No checkbox; this step always runs when you click **Run Preprocessing and Analyze**. Domain-specific fixes (e.g. title casing, value normalization) come from AI suggestions in step 4.
+3. **Cleaned Dataset & Reports** — Preview the cleaned data, schema, and quality score (0–100 with completeness/consistency/validity/uniqueness).
+4. **Recommendations** — The app detects issues (missingness, mixed types, outliers, etc.) and sends them to **Gemini** for fix suggestions (normalize values, coerce types, title case). You review and apply fixes selectively.
+5. **Download Final Dataset** — Export the cleaned CSV.
 
-### Generate reports with Stage 3 metadata
+### Generate reports (CLI)
 
 From the project root:
 
 ```bash
-# Run the pipeline (as before) – now reports include issues + quality score
+# Run the pipeline – reports include issues + quality score
 python -m app.main data/raw/messy.csv -o data/cleaned/cleaned.csv
 
-# Or explicitly enable review mode (same cleaning, richer report metadata)
+# Richer report metadata for use with the web app
 python -m app.main --review data/raw/messy.csv -o data/cleaned/cleaned.csv
 ```
 
@@ -111,22 +113,17 @@ This produces:
 - JSON + HTML reports under `data/reports/`, including:
   - `summary` (rows/cols before/after, duplicates, actions)
   - `issues` (detected problems and suggested actions)
-  - `quality` (overall score + completeness/consistency/validity/uniqueness)
+  - `quality` (overall score + component breakdown)
 
-### Launch the web review UI
+### Launch the web app
 
 In a terminal with the venv activated:
 
 ```bash
-streamlit run app/review_app.py
+streamlit run app/smart_app.py
 ```
 
-Then:
-
-- Select a JSON report from `data/reports/`.
-- Inspect the data quality score and component breakdown.
-- Expand issues and choose suggested fixes (drop column, drop rows where missing, etc.).
-- Apply selected fixes and **download a reviewed CSV**.
+Then: pick or upload a CSV, run preprocessing, review AI recommendations, and **download the final dataset**.
 
 ## Tests
 

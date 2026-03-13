@@ -6,7 +6,7 @@ pyarrow>=10.0.0,<16.0.0
 # HTTP client (used by Gemini API calls)
 requests>=2.28.0,<3.0.0
 
-# Web UI for Stage 3 review
+# Web UI for Cleanse.ai review
 streamlit>=1.40.0,<2.0.0
 
 # Dev

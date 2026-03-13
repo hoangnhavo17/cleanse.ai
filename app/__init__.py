@@ -1,1 +1,1 @@
-# Cleanse app package
+# Cleanse.ai app package

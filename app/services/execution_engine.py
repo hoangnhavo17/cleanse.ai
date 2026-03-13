@@ -1,7 +1,7 @@
 """
-Stage 3 execution engine.
+Execution engine for applying user-approved fixes to a DataFrame.
 
-Applies user-approved actions to a DataFrame in a pure, testable way.
+Used by the smart app and report flow; pure, testable application of actions.
 """
 from __future__ import annotations
 

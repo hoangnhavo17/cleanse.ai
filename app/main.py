@@ -1,5 +1,5 @@
 """
-Entrypoint: one pipeline — load → clean (rule-based) → profile + automated rules → save + report.
+Entrypoint: one pipeline — load → standard cleaning → profile + automated rules → save + report.
 
 Usage:
   python -m app.main                                      # use config defaults (INPUT_PATH, OUTPUT_PATH in data/)
@@ -55,7 +55,7 @@ def run(
     rows_after, cols_after = df.shape[0], df.shape[1]
     profile_after = profile_dataset(df)
 
-    # Stage 3: derive issues and a simple data quality score from profiles.
+    # Derive issues and a data quality score from profiles (for reports and web app).
     issues = detect_issues_from_profile(profile_before)
     quality = compute_quality_score(profile_before, profile_after, issues)
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Clean a CSV: load → clean → automated rules → save + report.",
+        description="Cleanse.ai pipeline: load CSV → clean → automated rules → save + report.",
     )
     parser.add_argument(
         "input_csv",
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--review",
         action="store_true",
-        help="Enable Stage 3 review mode (generates richer report for the web review app).",
+        help="Enable richer report metadata (issues, quality score) for the web app.",,
     )
     args = parser.parse_args()
 

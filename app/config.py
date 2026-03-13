@@ -28,7 +28,7 @@ CSV_SEP: str = ","
 
 # Person-name capitalization (value-based columns only). Disabled by default so that
 # all title-casing (people, products, titles) is handled by the AI layer instead of
-# deterministic preprocessing.
+# standard cleaning.
 CAPITALIZE_PERSON_NAMES: bool = False
 # How to case: "title" (Grace, Mary Jane) or "sentence" (Grace, Mary jane).
 PERSON_NAME_CASE: str = "title"

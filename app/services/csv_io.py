@@ -137,5 +137,7 @@ def load_csv(path: str | Path, sep: str | None = None) -> tuple[pd.DataFrame, st
 
 def save_csv(df: pd.DataFrame, path: str | Path, sep: str | None = None) -> None:
     """Save DataFrame to CSV. Uses given sep or config CSV_SEP."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     sep_used = sep if sep is not None else CSV_SEP
     df.to_csv(path, index=False, sep=sep_used, encoding=ENCODING)

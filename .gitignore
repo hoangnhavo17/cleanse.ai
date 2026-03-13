@@ -40,6 +40,8 @@ env/
 
 # Output
 cleaned.csv
+data/cleaned/
+data/reports/
 
 # Pytest
 .pytest_cache/

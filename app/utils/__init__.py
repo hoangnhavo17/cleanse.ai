@@ -1,1 +1,1 @@
-# Utils (empty for Stage 1)
+# Utils (reserved for future use)

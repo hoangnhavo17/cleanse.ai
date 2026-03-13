@@ -410,6 +410,7 @@ def _run_pipeline(
         "cols_after": cols_after,
         "issues": issues,
         "quality": quality,
+        "quality_base": quality,
         "actions": actions,
         "cleaned_csv_bytes": buf.getvalue().encode("utf-8"),
         "file_name": file_name,
@@ -484,6 +485,7 @@ def _update_run_result(res: Dict[str, Any], df_new: pd.DataFrame) -> None:
         profile_after,
         new_issues,
     )
+    base_quality = res.get("quality_base", res.get("quality"))
     st.session_state["run_result"] = {
         **res,
         "df_after": df_new,
@@ -491,6 +493,7 @@ def _update_run_result(res: Dict[str, Any], df_new: pd.DataFrame) -> None:
         "cols_after": len(df_new.columns),
         "issues": new_issues,
         "quality": quality,
+        "quality_base": base_quality,
         "cleaned_csv_bytes": buf.getvalue().encode("utf-8"),
     }
 
@@ -512,12 +515,14 @@ def _apply_ai_fix(res: Dict[str, Any], df_new: pd.DataFrame) -> None:
         profile_after,
         res["issues"],
     )
+    base_quality = res.get("quality_base", res.get("quality"))
     st.session_state["run_result"] = {
         **res,
         "df_after": df_new,
         "rows_after": len(df_new),
         "cols_after": len(df_new.columns),
         "quality": quality,
+        "quality_base": base_quality,
         "cleaned_csv_bytes": buf.getvalue().encode("utf-8"),
     }
 
@@ -550,12 +555,14 @@ def _compute_run_result_with_fixes(
         profile_after,
         run_result_base["issues"],
     )
+    base_quality = run_result_base.get("quality_base", run_result_base.get("quality"))
     return {
         **run_result_base,
         "df_after": df,
         "rows_after": len(df),
         "cols_after": len(df.columns),
         "quality": quality,
+        "quality_base": base_quality,
         "cleaned_csv_bytes": buf.getvalue().encode("utf-8"),
     }
 
@@ -580,12 +587,14 @@ def _apply_single_fix_and_update_run_result(
         profile_after,
         res["issues"],
     )
+    base_quality = res.get("quality_base", res.get("quality"))
     return {
         **res,
         "df_after": df,
         "rows_after": len(df),
         "cols_after": len(df.columns),
         "quality": quality,
+        "quality_base": base_quality,
         "cleaned_csv_bytes": buf.getvalue().encode("utf-8"),
     }
 
@@ -712,23 +721,56 @@ def main() -> None:
     )
 
     # --- Step 1: Preview -------------------------------------------------------
-    st.subheader("1. Preview & Schema")
+    st.subheader("1. Preview, Schema & Report")
 
     if df_raw is not None and file_name is not None:
-        tab_prev, tab_schema = st.tabs(["Preview rows", "Schema"])
+        tab_prev, tab_schema, tab_report1 = st.tabs(
+            ["Preview rows", "Schema", "Report"]
+        )
         with tab_prev:
             st.dataframe(_preview_dataframe(df_raw.head(50)), width="stretch")
         with tab_schema:
             st.dataframe(_build_schema_table(df_raw), width="stretch")
+        with tab_report1:
+            # Step 1 report is based on the raw data only (no preprocessing, no AI).
+            profile_raw = profile_dataset(df_raw)
+            raw_issues = detect_issues_from_profile(profile_raw)
+            quality_raw = compute_quality_score(profile_raw, None, raw_issues)
+            st.markdown("**Data quality on raw data**")
+            st.metric("Overall score", quality_raw.get("score", 0.0))
+            comps = quality_raw.get("components", {}) or {}
+            st.write(
+                {
+                    "completeness": comps.get("completeness"),
+                    "consistency": comps.get("consistency"),
+                    "validity": comps.get("validity"),
+                    "uniqueness": comps.get("uniqueness"),
+                }
+            )
+            patterns = [
+                (cp.get("column"), cp.get("missingness_pattern"))
+                for cp in (profile_raw.get("column_profiles") or [])
+                if cp.get("missingness_pattern")
+            ]
+            if patterns:
+                st.markdown("**Missingness patterns**")
+                st.caption(
+                    "Columns where missingness is strongly tied to another column's value."
+                )
+                for col_name, pat in patterns:
+                    when_col = pat.get("when_column", "")
+                    when_val = pat.get("when_value", "")
+                    rate = pat.get("missing_rate_when", 0)
+                    overall = pat.get("overall_missing_pct", 0)
+                    st.markdown(
+                        f"- **{col_name}**: {overall}% missing overall; "
+                        f"{rate}% missing when `{when_col}` = \"{when_val}\""
+                    )
 
         # --- Step 2: Core Preprocessing ----------------------------------------
         st.subheader("2. Core Preprocessing")
-        st.caption("Deterministic cleanup only.")
-
-        apply_standard_clean = st.checkbox(
-            "Standard Cleaning",
-            value=True,
-            key="cp_step_clean",
+        st.caption(
+            "Standard cleaning",
             help=(
                 "Trim whitespace, standardize nulls, clean column names, "
                 "drop fully-empty rows/columns, remove exact duplicates, and "
@@ -740,7 +782,7 @@ def main() -> None:
         if st.button("Run Preprocessing and Analyze", type="primary"):
             with st.spinner("Running preprocessing, profiling, and issue detection…"):
                 st.session_state["run_result"] = _run_pipeline(
-                    df_raw, file_name, apply_standard_clean,
+                    df_raw, file_name, apply_standard_clean=True,
                 )
                 st.session_state["ai_recommendations"] = None
                 st.session_state["ai_applied_fixes"] = {}
@@ -756,14 +798,16 @@ def main() -> None:
                 st.caption("Preprocessing — " + " · ".join(clean_summary))
 
         # --- Step 3: Cleaned Dataset -------------------------------------------
-        st.subheader("3. Cleaned Dataset")
+        st.subheader("3. Cleaned Dataset & Reports")
         res: Dict[str, Any] | None = st.session_state.get("run_result")
 
         if res is None:
             st.info("Run preprocessing above to see the cleaned dataset here.")
         else:
             df_after: pd.DataFrame = res["df_after"]
-            tab_clean, tab_schema_after = st.tabs(["Preview rows", "Schema"])
+            tab_clean, tab_schema_after, tab_report3 = st.tabs(
+                ["Preview rows", "Schema", "Reports"]
+            )
             with tab_clean:
                 st.dataframe(_preview_dataframe(df_after.head(50)), width="stretch")
                 st.caption(
@@ -777,6 +821,42 @@ def main() -> None:
                     width="stretch",
                     key=f"schema_after_{id(res['df_after'])}",
                 )
+            with tab_report3:
+                q = res.get("quality")
+                if not q:
+                    st.info("Quality report is not available.")
+                else:
+                    st.markdown("**Cleaned data quality**")
+                    st.metric("Overall score", q.get("score", 0.0))
+                    comps = q.get("components", {}) or {}
+                    st.write(
+                        {
+                            "completeness": comps.get("completeness"),
+                            "consistency": comps.get("consistency"),
+                            "validity": comps.get("validity"),
+                            "uniqueness": comps.get("uniqueness"),
+                        }
+                    )
+                profile_after = profile_dataset(df_after)
+                patterns3 = [
+                    (cp.get("column"), cp.get("missingness_pattern"))
+                    for cp in (profile_after.get("column_profiles") or [])
+                    if cp.get("missingness_pattern")
+                ]
+                if patterns3:
+                    st.markdown("**Missingness patterns**")
+                    st.caption(
+                        "Columns where missingness is strongly tied to another column's value."
+                    )
+                    for col_name, pat in patterns3:
+                        when_col = pat.get("when_column", "")
+                        when_val = pat.get("when_value", "")
+                        rate = pat.get("missing_rate_when", 0)
+                        overall = pat.get("overall_missing_pct", 0)
+                        st.markdown(
+                            f"- **{col_name}**: {overall}% missing overall; "
+                            f"{rate}% missing when `{when_col}` = \"{when_val}\""
+                        )
 
             # --- Step 4: Recommendations ---------------------------------------
             st.subheader("4. Recommendations")
@@ -788,8 +868,10 @@ def main() -> None:
                 # Compute actionable issues and the next batch that will be sent to Gemini.
                 actionable = _get_actionable_issues(issues, df_after)
                 existing_recs = st.session_state.get("ai_recommendations") or {}
-                without_recs = _get_issues_without_recs(actionable, existing_recs)
-                next_batch = without_recs[:MAX_ISSUES_PER_REQUEST]
+                # Send all actionable issues in a single request (up to MAX_ISSUES_PER_REQUEST),
+                # even if some already have recommendations. This avoids needing multiple clicks
+                # just to cover a small set of issues.
+                next_batch = actionable[:MAX_ISSUES_PER_REQUEST]
 
                 if next_batch:
                     with st.expander(
@@ -1015,35 +1097,6 @@ def main() -> None:
                                             if not applied:
                                                 st.session_state["run_result_base"] = None
                                             st.rerun()
-
-                    # Suspicious values for ALL text_quality issues
-                    # (both sent to Gemini and not yet sent).
-                    text_quality_issues = [
-                        iss
-                        for iss in issues
-                        if iss.category == IssueCategory.TEXT_QUALITY
-                        and iss.column
-                        and iss.column in df_after.columns
-                    ]
-                    if text_quality_issues:
-                        with st.expander(
-                            "Suspicious values to review", expanded=False
-                        ):
-                            st.caption(
-                                "Values that may be typos or encoding "
-                                "artifacts (e.g. 'Italy1', 'La vita B9 bella', "
-                                "'US.'). Edit them in your CSV or let AI "
-                                "fix them."
-                            )
-                            for iss in text_quality_issues:
-                                vals = _detect_suspicious_values(
-                                    df_after, iss.column
-                                )
-                                if vals:
-                                    st.markdown(
-                                        f"**{iss.column}**: "
-                                        + ", ".join(f"`{v}`" for v in vals)
-                                    )
 
             # --- Step 5: Download ----------------------------------------------
             st.subheader("5. Download Final Dataset")

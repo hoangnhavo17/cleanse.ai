@@ -1,1 +1,1 @@
-# Models (empty for Stage 1)
+# Models (reserved for future use)

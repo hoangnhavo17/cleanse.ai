@@ -1,6 +1,6 @@
 """
 Profile-based automation: type fixes (coerce inferred numeric), duplicate removal.
-Used after rule-based clean() in the single pipeline. No imputation — missing values stay missing.
+Used after standard cleaning (clean()) in the pipeline. No imputation — missing values stay missing.
 """
 from __future__ import annotations
 

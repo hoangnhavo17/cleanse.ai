@@ -1,5 +1,5 @@
 """
-Stage 3 issue model and helpers.
+Issue model and helpers for data quality (used by profiler, reports, and smart app).
 
 Defines:
 - Issue / SuggestedAction / Action data structures
@@ -23,6 +23,7 @@ class IssueCategory(str, Enum):
     CARDINALITY = "cardinality"
     CONSTANT = "constant"
     DUPLICATES = "duplicates"
+    REDUNDANT = "redundant"
     DISTRIBUTION = "distribution"
     TEXT_QUALITY = "text_quality"
     OTHER = "other"
@@ -191,6 +192,26 @@ def detect_issues_from_profile(profile: Dict[str, Any]) -> List[Issue]:
                 )
             )
 
+        # Numeric-looking but categorical (e.g. zip_code, IDs): mean/median meaningless
+        if inferred == INFERRED_NUMERIC and cp.get("numeric_but_categorical"):
+            nb = cp["numeric_but_categorical"]
+            issues.append(
+                Issue(
+                    id=f"type_validation::{col}",
+                    category=IssueCategory.OTHER,
+                    severity=IssueSeverity.INFO,
+                    title=f"Numeric-looking but categorical: '{col}'",
+                    message=(
+                        f"Column '{col}' looks numeric but has high cardinality ({cardinality} distinct values). "
+                        "It may be a code or identifier (e.g. zip_code, ID). "
+                        "Summary statistics like mean or median are not meaningful."
+                    ),
+                    column=col,
+                    stats=dict(nb) if isinstance(nb, dict) else {},
+                    suggestions=[],
+                )
+            )
+
         # High-cardinality categoricals
         if inferred == INFERRED_CATEGORICAL and non_null_count > 0:
             ratio = cardinality / max(1, non_null_count)
@@ -289,6 +310,44 @@ def detect_issues_from_profile(profile: Dict[str, Any]) -> List[Issue]:
                     suggestions=[],
                 )
             )
+
+    # Redundant / derived column pairs (correlation ≈ 1 or ≈ -1)
+    for pair in profile.get("redundant_pairs") or []:
+        col_a = pair.get("col_a")
+        col_b = pair.get("col_b")
+        corr = pair.get("correlation")
+        if col_a is None or col_b is None:
+            continue
+        col_a, col_b = str(col_a), str(col_b)
+        issues.append(
+            Issue(
+                id=f"redundant::{col_a}::{col_b}",
+                category=IssueCategory.REDUNDANT,
+                severity=IssueSeverity.INFO,
+                title=f"Redundant or derived columns: '{col_a}' and '{col_b}'",
+                message=(
+                    f"Columns '{col_a}' and '{col_b}' have correlation {corr}. "
+                    "One may be derived from the other (e.g. height_cm vs height_m). "
+                    "Consider dropping one to avoid redundancy."
+                ),
+                column=col_a,
+                stats={"col_a": col_a, "col_b": col_b, "correlation": corr},
+                suggestions=[
+                    SuggestedAction(
+                        kind=ActionKind.DROP_COLUMN.value,
+                        description=f"Drop column '{col_b}' (keep '{col_a}').",
+                        params={"column": col_b},
+                        safe=False,
+                    ),
+                    SuggestedAction(
+                        kind=ActionKind.DROP_COLUMN.value,
+                        description=f"Drop column '{col_a}' (keep '{col_b}').",
+                        params={"column": col_a},
+                        safe=False,
+                    ),
+                ],
+            )
+        )
 
     # Dataset-level duplicates
     dup_rows = int(profile.get("duplicate_rows", 0) or 0)
