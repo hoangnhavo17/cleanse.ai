@@ -685,9 +685,9 @@ def main() -> None:
         """
         <style>
           [data-testid="stAppViewContainer"] > .main {
-            padding-left: 2rem; padding-right: 2rem; padding-top: 0;
+            padding-left: 2rem; padding-right: 2rem; padding-top: 2.5rem;
           }
-          .block-container { padding-top: 0; }
+          .block-container { padding-top: 2rem; }
           .cp-hero { padding: 0 0 1rem 0; display: flex; flex-direction: column; gap: 0.75rem; }
           .cp-eyebrow { font-size: 0.9rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #60a5fa; }
           .cp-title { font-size: 3.0rem; font-weight: 700; letter-spacing: -0.04em; margin: 0; }
