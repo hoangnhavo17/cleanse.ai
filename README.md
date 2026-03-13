@@ -1,5 +1,7 @@
 # Cleanse.ai
 
+**Live app:** [cleanseai.streamlit.app](https://cleanseai.streamlit.app)
+
 One pipeline: load CSV → **standard cleaning** → profile + automated rules → save cleaned CSV + report.
 
 ## What it does
@@ -115,7 +117,11 @@ This produces:
   - `issues` (detected problems and suggested actions)
   - `quality` (overall score + component breakdown)
 
-### Launch the web app
+### Try the app
+
+**[cleanseai.streamlit.app](https://cleanseai.streamlit.app)** — pick or upload a CSV, run preprocessing, review AI recommendations, and download the cleaned dataset.
+
+### Run the web app locally
 
 In a terminal with the venv activated:
 
@@ -123,7 +129,19 @@ In a terminal with the venv activated:
 streamlit run app/smart_app.py
 ```
 
-Then: pick or upload a CSV, run preprocessing, review AI recommendations, and **download the final dataset**.
+### Deploy on Streamlit Community Cloud
+
+The app is set up to run on [Streamlit Community Cloud](https://streamlit.io/cloud):
+
+1. Push this repo to GitHub (you’re already there).
+2. Go to [share.streamlit.io](https://share.streamlit.io) (or Streamlit Cloud in the dashboard), connect the repo, and create a new app.
+3. **Main file path:** `app/smart_app.py`
+4. **Secrets:** In the app’s settings, add your Gemini API key so AI recommendations work:
+   - **Secrets** → TOML format → add:
+   ```toml
+   GEMINI_API_KEY = "your-api-key"
+   ```
+5. Deploy. Demo datasets (e.g. Warehouse, Healthcare, HR, IMDB) are in `data/raw/` in the repo, so they appear in the app; users can also upload their own CSV.
 
 ## Tests
 
