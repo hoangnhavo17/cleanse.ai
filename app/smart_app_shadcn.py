@@ -1,4 +1,11 @@
-"""Cleanse.ai main Streamlit app."""
+"""
+Cleanse.ai — Shadcn UI test copy.
+
+Same logic as smart_app.py but with streamlit-shadcn-ui components:
+hero badges, ui.button for primary actions, ui.metric_card for quality scores,
+ui.card for recommendation blocks and download section.
+Run with: streamlit run app/smart_app_shadcn.py
+"""
 from __future__ import annotations
 
 import io

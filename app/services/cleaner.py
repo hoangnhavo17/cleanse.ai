@@ -13,6 +13,7 @@ import unicodedata
 import warnings
 from datetime import datetime
 from difflib import get_close_matches
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -400,9 +401,9 @@ def _normalize_numeric_string(val: str) -> str:
         cleaned = f"{before}.{after}" if after else before
     else:
         cleaned = cleaned.lstrip("0") or "0"
-    # Keep currency symbol when source had $ (e.g. "$ 28815245" → "$28815245")
-    if isinstance(val, str) and val.strip().startswith("$"):
-        return "$" + cleaned
+    # For currency values we now normalize to a pure numeric string so the column
+    # can be coerced to a numeric dtype; currency formatting is handled at the UI
+    # / presentation layer instead of being stored in the cleaned dataset.
     return cleaned
 
 
@@ -527,22 +528,6 @@ def _columns_with_ratio_like_values(df: pd.DataFrame, object_columns: list[str])
             continue
         match_count = non_empty.apply(lambda v: bool(_RATIO_LIKE_PATTERN.match(v))).sum()
         if match_count >= len(non_empty) * _RATIO_COLUMN_MIN_SHARE:
-            out.add(col)
-    return out
-
-
-def _columns_with_currency_values(df: pd.DataFrame, object_columns: list[str]) -> set[str]:
-    """Columns where a significant share of values start with '$' (source had currency). Don't coerce those."""
-    out: set[str] = set()
-    for col in object_columns:
-        if col not in df.columns:
-            continue
-        series = df[col].dropna().astype(str).str.strip()
-        non_empty = series[series != ""]
-        if len(non_empty) == 0:
-            continue
-        with_dollar = non_empty.str.startswith("$").sum()
-        if with_dollar >= len(non_empty) * _CURRENCY_IN_VALUE_MIN_SHARE:
             out.add(col)
     return out
 
@@ -679,11 +664,11 @@ def _parse_single_date(val) -> pd.Timestamp | None:
             return pd.Timestamp(datetime.strptime(s, fmt))
         except (ValueError, TypeError):
             continue
-    try:
-        from dateutil.parser import parse as dateutil_parse
-        return pd.Timestamp(dateutil_parse(s, dayfirst=True))
-    except Exception:
-        return None
+    # Do not try to "correct" invalid dates (e.g. 1984-02-34, 1976-13-24) via
+    # fuzzy parsers like dateutil. If a value doesn't match one of our known
+    # formats with a valid calendar date, treat it as invalid (NaT) so it
+    # becomes null instead of being silently adjusted.
+    return None
 
 
 def _coerce_series_to_datetime(series: pd.Series) -> pd.Series:
@@ -709,7 +694,14 @@ def _infer_coercion_type(series: pd.Series) -> str | None:
     # Use the same numeric string normalizer as the coercion step so inference
     # and coercion agree (e.g. '9,.0', '8,9f', '08.9', '8..8', '++8.7' all
     # become clean float-like strings before we measure the numeric share).
-    norm_for_numeric = as_str.astype(str).apply(_normalize_numeric_string)
+    #
+    # IMPORTANT: values that clearly look like dates (contain '/' or '-') should
+    # not count toward the numeric share, otherwise columns like "Last Restocked"
+    # with values such as "3/1/2024" can be (incorrectly) inferred as numeric.
+    date_punct = as_str.str.contains(r"[/-]", regex=True)
+    norm_for_numeric = as_str.copy()
+    norm_for_numeric[date_punct] = pd.NA
+    norm_for_numeric = norm_for_numeric.astype(str).apply(_normalize_numeric_string)
     numeric = pd.to_numeric(norm_for_numeric, errors="coerce")
     dt = _coerce_series_to_datetime(as_str)
     share_n = numeric.notna().mean()
@@ -777,7 +769,7 @@ def coerce_mixed_types(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def clean(df: pd.DataFrame) -> pd.DataFrame:
+def clean(df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, Any]]:
     """
     Compose core, domain-neutral cleaning steps in fixed order.
 
@@ -790,6 +782,7 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     Domain-specific normalization (countries, content ratings, etc.) also remains in Gemini.
     """
     steps_applied: list[str] = []
+    metadata: dict[str, Any] = {}
 
     before = df
     df = trim_whitespace(df)
@@ -847,7 +840,22 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     if not df.equals(before):
         steps_applied.append("remove_duplicates")
 
+    # Detect currency-like columns based on original string values so the UI can
+    # render them with $ formatting even though we coerce them to numeric.
+    currency_cols: list[str] = []
+    for col in df.columns:
+        series = df[col]
+        if not (pd.api.types.is_object_dtype(series) or pd.api.types.is_string_dtype(series)):
+            continue
+        non_empty = series.dropna().astype(str).str.strip()
+        non_empty = non_empty[non_empty != ""]
+        if len(non_empty) == 0:
+            continue
+        with_dollar = non_empty.str.startswith("$").sum()
+        if with_dollar >= len(non_empty) * _CURRENCY_IN_VALUE_MIN_SHARE:
+            currency_cols.append(col)
+
     df = df.reset_index(drop=True)
-    # Attach metadata for UI/debug: which preprocessing steps actually changed data.
-    df.attrs["clean_steps_applied"] = steps_applied
-    return df
+    metadata["steps_applied"] = steps_applied
+    metadata["currency_columns"] = currency_cols
+    return df, metadata

@@ -47,7 +47,7 @@ def run(
     out_path = Path(output_path) if output_path is not None else OUTPUT_PATH
 
     df, sep = load_csv(in_path)
-    df = clean(df)
+    df, _meta = clean(df)
 
     profile_before = profile_dataset(df)
     rows_before, cols_before = df.shape[0], df.shape[1]

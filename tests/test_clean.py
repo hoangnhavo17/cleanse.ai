@@ -87,9 +87,10 @@ def test_clean_end_to_end():
         "name": ["  Alice  ", "  Bob  ", "  Alice  "],
         "value": [" 42 ", " 43 ", " 42 "],
     })
-    out = clean(df)
+    out, meta = clean(df)
     assert out["name"].str.strip().tolist() == ["Alice", "Bob"]
     assert len(out) == 2
+    assert "steps_applied" in meta
 
 
 *** End of File
