@@ -1059,8 +1059,26 @@ def main() -> None:
                                                 if checked:
                                                     selected_mappings[src] = tgt
 
+                                    # Build effective params from the current checkbox state
+                                    # so the code preview always matches what would be applied.
+                                    params_for_preview = rec.get("fix_params", {}) or {}
+                                    if action == "normalize_values":
+                                        base_mappings = {
+                                            str(src): tgt
+                                            for src, tgt in (
+                                                params_for_preview.get("mappings", {}) or {}
+                                            ).items()
+                                            if str(src) != str(tgt)
+                                        }
+                                        if selected_mappings is not None:
+                                            base_mappings = selected_mappings
+                                        params_for_preview = {
+                                            **params_for_preview,
+                                            "mappings": base_mappings,
+                                        }
+
                                     fix_code = get_fix_code(
-                                        action, issue.column, rec.get("fix_params", {}),
+                                        action, issue.column, params_for_preview,
                                     )
                                     st.caption("**Python recommendation:**")
                                     st.code(fix_code, language="python")
@@ -1083,23 +1101,9 @@ def main() -> None:
                                                     **res,
                                                     "df_after": res["df_after"].copy(),
                                                 }
-                                            # Use only the selected mappings, if applicable,
-                                            # and always drop identity mappings.
-                                            params = rec.get("fix_params", {}) or {}
-                                            if action == "normalize_values":
-                                                base_mappings = {
-                                                    str(src): tgt
-                                                    for src, tgt in (
-                                                        params.get("mappings", {}) or {}
-                                                    ).items()
-                                                    if str(src) != str(tgt)
-                                                }
-                                                if selected_mappings is not None:
-                                                    base_mappings = selected_mappings
-                                                params = {
-                                                    **params,
-                                                    "mappings": base_mappings,
-                                                }
+                                            # Use the same effective params shown in the
+                                            # code preview so UI and apply behavior stay aligned.
+                                            params = params_for_preview
                                             applied = {
                                                 **ai_applied_fixes,
                                                 issue.id: {
