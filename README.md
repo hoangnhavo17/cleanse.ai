@@ -33,13 +33,6 @@ data/               # demo CSVs in-repo; generated outputs gitignored
 tests/
 ```
 
-## Deploy your own copy (Streamlit Community Cloud)
-
-1. Connect this repo on [Streamlit Community Cloud](https://streamlit.io/cloud).
-2. **Main file:** `app/smart_app.py`
-3. **Python:** 3.11 or 3.12 in Advanced settings (avoid 3.14 for dependency wheels).
-4. **Secrets:** `GEMINI_API_KEY` for AI recommendations.
-
 ## What this project demonstrates
 
 - End-to-end **load → clean → profile → report** thinking.
